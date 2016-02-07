@@ -9,17 +9,43 @@ package jssc_test;
  *
  * @author kobi0_000
  */
+
+import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jssc.*; import jssc.SerialPort;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import jssc.*;
+import jssc.SerialPort;
 
-public class jssc_gui extends javax.swing.JFrame {
-     protected SerialPort serialPort;
-    private String portName;
+
+
+
+public class jssc_gui extends javax.swing.JFrame
+     
+          
+                                            {
+    static SerialPort serialPort;
+    public String portName;
+    boolean cont_stream = true;
+    static boolean tdl_off = true;
+    static InputStream inputStream;
+
+   
 
     public jssc_gui() {
         this.serialPort = new SerialPort(portName);
+      //  
         initComponents();
+         
+          
     }
 
     /**
@@ -34,12 +60,19 @@ public class jssc_gui extends javax.swing.JFrame {
         sPort = new javax.swing.JComboBox<>();
         connectionButton = new javax.swing.JButton();
         sendButton = new javax.swing.JButton();
-        serialIn = new javax.swing.JTextField();
         serialOut = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        serialTXRX = new javax.swing.JTextArea();
+        sendHex = new javax.swing.JButton();
+        progressBar_1 = new javax.swing.JProgressBar();
+        jLabel1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
+        firmwarePath = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         sPort.setModel(new javax.swing.DefaultComboBoxModel(SerialPortList.getPortNames()));
+        sPort.setToolTipText("");
         sPort.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sPortActionPerformed(evt);
@@ -59,24 +92,78 @@ public class jssc_gui extends javax.swing.JFrame {
                 sendButtonActionPerformed(evt);
             }
         });
+        sendButton.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                sendButtonKeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                sendButtonKeyTyped(evt);
+            }
+        });
+
+        serialOut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                serialOutActionPerformed(evt);
+            }
+        });
+        serialOut.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                serialOutKeyPressed(evt);
+            }
+        });
+
+        serialTXRX.setColumns(20);
+        serialTXRX.setRows(5);
+        jScrollPane1.setViewportView(serialTXRX);
+
+        sendHex.setText("Start TDL");
+        sendHex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendHexActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText("Download Progress");
+
+        jButton1.setText("Browse");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sPort, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(16, 16, 16)
-                        .addComponent(connectionButton)
-                        .addGap(0, 188, Short.MAX_VALUE))
-                    .addComponent(serialIn)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(serialOut)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane1)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addComponent(jButton1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(sendButton)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 178, Short.MAX_VALUE)
+                                .addComponent(jLabel1)
+                                .addGap(255, 255, 255)
+                                .addComponent(sendHex))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(firmwarePath, javax.swing.GroupLayout.PREFERRED_SIZE, 549, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(sPort, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(connectionButton))
+                            .addComponent(progressBar_1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 647, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(serialOut, javax.swing.GroupLayout.PREFERRED_SIZE, 651, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(sendButton)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -87,12 +174,23 @@ public class jssc_gui extends javax.swing.JFrame {
                     .addComponent(sPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(connectionButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(serialIn, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sendButton)
                     .addComponent(serialOut, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(122, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(progressBar_1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(34, 34, 34)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(firmwarePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jButton1)))
+                    .addComponent(sendHex))
+                .addGap(8, 8, 8))
         );
 
         pack();
@@ -100,81 +198,139 @@ public class jssc_gui extends javax.swing.JFrame {
 
     private void sPortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sPortActionPerformed
         // TODO add your handling code here:
+       
          portName = (String)sPort.getSelectedItem();
+          serialPort = new SerialPort(portName);
     }//GEN-LAST:event_sPortActionPerformed
 
     private void connectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionButtonActionPerformed
         // TODO add your handling code here:
-        SerialPort serialPort = new SerialPort(portName);
-       //  portName = (String)sPort.getSelectedItem();
          if (connectionButton.getText().equals("Disconnect")) {
-             try {
-                
-      serialPort.purgePort(WIDTH);
-        System.out.println("Port opened: " + serialPort.closePort());
- 
+          
+            if (serialPort != null && serialPort.isOpened ()) {      
+                   try {
+                            serialPort.purgePort(1);  
+                             serialPort.closePort();
+                            System.out.println("Port closing: " + serialPort.isOpened());
+                        }
+                   catch (SerialPortException ex) {
+                             System.out.println(ex);
+                        }
              }
-    catch (SerialPortException ex) {
-        System.out.println(ex);
-    }
-               connectionButton.setText("Connect");      
+            connectionButton.setText("Connect");      
             sPort.setEnabled(true);
-        
         } else {
-           
-         
-    try {
-        
-         serialPort.openPort();
+                 try {
+                        sPort.setSelectedIndex(0);
+                        serialPort.openPort();
        
-         serialPort.setParams(SerialPort.BAUDRATE_9600, 
+                        serialPort.setParams(SerialPort.BAUDRATE_115200, 
                              SerialPort.DATABITS_8,
                              SerialPort.STOPBITS_1,
                              SerialPort.PARITY_NONE);
-           serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
-                                  SerialPort.FLOWCONTROL_RTSCTS_OUT);
-            System.out.println("Port opened: " + serialPort.isOpened());
-            
-
-   
-
-       
-        //System.out.println("\"Hello World!!!\" successfully writen to port: " +   serialPort.writeBytes("Hello World!!!".getBytes()));
-     
-        connectionButton.setText("Disconnect");
-       sPort.setEnabled(false);
-    }
-    catch (SerialPortException ex){
-        System.out.println(ex);
-    }
+                       //serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
+                       //SerialPort.FLOWCONTROL_RTSCTS_OUT);
+                        System.out.println("Port opened: " + serialPort.isOpened());
+                        connectionButton.setText("Disconnect");
+                         sPort.setEnabled(false);
+                        int mask = SerialPort.MASK_RXCHAR + SerialPort.MASK_CTS + SerialPort.MASK_DSR;//Prepare mask
+                        serialPort.setEventsMask(mask);//Set mask
+                         serialPort.addEventListener(new SerialPortReader());//Add SerialPortEventListener
+                        }
+                         catch (SerialPortException ex){
+                                                        System.out.println(ex);
+                                                         serialTXRX.setText("No COM Ports Detected!\n");
+                         }
          }
-   
     }//GEN-LAST:event_connectionButtonActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         // TODO add your handling code here:
-        
+       
+          String buffer = serialOut.getText();
+              progressBar_1.setValue(0);
         if(serialPort.isOpened())
         {
-            
-          System.out.println("Port opened: " + serialPort.isOpened());
          try {   
-            String buffer = serialOut.getText();
-            serialPort.writeBytes(buffer.getBytes());            
-        }  catch (SerialPortException ex) {
-           System.out.println(ex);
-        }
-        }
+ 
+             // outputStream.write(buffer.getBytes()); //write to serial port
+                serialPort.writeBytes((buffer+"\r").getBytes());
+              // serialPort.writeBytes("\r".getBytes());
+              serialTXRX.append(">>" + buffer +"\n");  
+              System.out.println("Message sent.");
+              serialOut.setText("");
+               } catch (SerialPortException ex) {
+                  Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+               }
+            }
         else
-        {
-          
+            {
+             serialTXRX.append("Error: \"" +buffer + " \"not sent.\n");
              System.out.println("Port not opened");
-        }
+            }
     }//GEN-LAST:event_sendButtonActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
+    public void fileread()  {
+            try {
+                  progressBar_1.setEnabled(true);
+                  tdl_off = false;
+                        File file = new File(firmwarePath.getText());
+                        FileReader filer = new FileReader(file);
+			BufferedReader bufferedReader = new BufferedReader(filer);
+			StringBuffer stringBuffer = new StringBuffer();
+			String line;
+                       
+                         long totalLength = file.length();
+                         double lengthPerPercent = 100.0 / totalLength;
+                        long readLength = 0;
+			while ((line = bufferedReader.readLine()) != null && serialPort.isOpened() && cont_stream) {
+				stringBuffer.append(line);
+				stringBuffer.append("\r\n");
+
+                                serialPort.writeBytes(line.getBytes());
+                                  serialPort.writeBytes("\r".getBytes());
+                                 byte[] nextByte = serialPort.readBytes();
+                                 System.out.println("First: "+nextByte+"\n");
+                                 readLength += line.length();
+
+                                 progressBar_1.setValue((int) Math.round(lengthPerPercent * readLength));
+                            
+                                 while(serialPort.isOpened() && nextByte == null)
+                                    {
+                                        nextByte = serialPort.readBytes();
+                                         System.out.println(nextByte+"\n");
+                                     } 
+                        }
+  
+                progressBar_1.setValue(100);
+                progressBar_1.setEnabled(false);
+                filer.close();
+                    
+                   
+                       // System.out.println("Contents of file:");
+			//System.out.println(stringBuffer.toString());
+                        
+		
+		} catch (SerialPortException ex) {
+            Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (FileNotFoundException ex) {
+           Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+           Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+       }
+       
+     
+  tdl_off = true;
+    }                                       
+
+public  class thread1 implements Runnable{
+	public void run(){
+            sendHex.setEnabled(false);
+            
+		   fileread();
+                       sendHex.setEnabled(true);
+	}
+}
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -198,69 +354,111 @@ public class jssc_gui extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(jssc_gui.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+  // serialPort = new SerialPort(portName); 
+
+   
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            
             public void run() {
+       
                 new jssc_gui().setVisible(true);
+             
        
             }
         });
     }
-   public void go() throws InterruptedException
-   {
-           SerialPort serialPort = new SerialPort(portName);
-       //  portName = (String)sPort.getSelectedItem();
-         if (connectionButton.getText().equals("Disconnect")) {
-             try {
-                
-      serialPort.purgePort(WIDTH);
-        System.out.println("Port opened: " + serialPort.closePort());
- 
-             }
-    catch (SerialPortException ex) {
-        System.out.println(ex);
-    }
-               connectionButton.setText("Connect");      
-            sPort.setEnabled(true);
-        
-        } else {
-           
-         
-    try {
-        
-         serialPort.openPort();
-       
-         serialPort.setParams(SerialPort.BAUDRATE_9600, 
-                             SerialPort.DATABITS_8,
-                             SerialPort.STOPBITS_1,
-                             SerialPort.PARITY_NONE);
-           serialPort.setFlowControlMode(SerialPort.FLOWCONTROL_RTSCTS_IN | 
-                                  SerialPort.FLOWCONTROL_RTSCTS_OUT);
-           serialPort.wait();
-            System.out.println("Port opened: " + serialPort.isOpened());
-            
+    
+  
+    private void sendHexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendHexActionPerformed
+ new Thread(new thread1()).start();         
+    
+    }//GEN-LAST:event_sendHexActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+            JFileChooser fileChooser = new JFileChooser();
+      FileNameExtensionFilter filter = new FileNameExtensionFilter("HEX FILES", "hex", "HEX");
+    fileChooser.setFileFilter(filter);
+      fileChooser.showOpenDialog(null);
+      File f = fileChooser.getSelectedFile();
+      String filename = f.getAbsolutePath();
+      firmwarePath.setText(filename);
+      
+
+                                         
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void sendButtonKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_sendButtonKeyPressed
+        // TODO add your handling code here:
    
+    }//GEN-LAST:event_sendButtonKeyPressed
 
-       
-        //System.out.println("\"Hello World!!!\" successfully writen to port: " +   serialPort.writeBytes("Hello World!!!".getBytes()));
+    private void serialOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serialOutActionPerformed
+
+      
+    }//GEN-LAST:event_serialOutActionPerformed
+
+    private void sendButtonKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_sendButtonKeyTyped
+        // TODO add your handling code here:
      
-        connectionButton.setText("Disconnect");
-       sPort.setEnabled(false);
-    }
-    catch (SerialPortException ex){
-        System.out.println(ex);
-    }
+    }//GEN-LAST:event_sendButtonKeyTyped
+
+    private void serialOutKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_serialOutKeyPressed
+        // TODO add your handling code here:
+                 if (evt.getKeyCode()==KeyEvent.VK_ENTER){
+       sendButton.doClick();
+        }
+    }//GEN-LAST:event_serialOutKeyPressed
+
+
+
+static class SerialPortReader implements SerialPortEventListener {
+@Override
+
+   public void serialEvent(SerialPortEvent event) {
+        
+        if(event.isRXCHAR() && tdl_off){//If data is available
+            //if(event.getEventValue() > 0){//Check bytes count in the input buffer
+                //Read data, if 10 bytes available 
+                int numBytes=0; 
+                 try {
+                  
+                byte[] bufferIn = serialPort.readBytes();
+
+                    String str= new String(bufferIn).substring(0,numBytes);
+                 
+                    str = new String(bufferIn, "UTF-8");
+                       serialTXRX.append(str);
+                    System.out.print(str);
+       
+                }catch (SerialPortException ex) {
+                    Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(jssc_gui.class.getName()).log(Level.SEVERE, null, ex);
+            }
          }
-   
-   }
+     }
+}
+
+        
+
+
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton connectionButton;
-    private javax.swing.JComboBox<String> sPort;
+    private javax.swing.JTextField firmwarePath;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JProgressBar progressBar_1;
+    public javax.swing.JComboBox<String> sPort;
     private javax.swing.JButton sendButton;
-    private javax.swing.JTextField serialIn;
+    private javax.swing.JButton sendHex;
     private javax.swing.JTextField serialOut;
+    private static javax.swing.JTextArea serialTXRX;
     // End of variables declaration//GEN-END:variables
 }
+
