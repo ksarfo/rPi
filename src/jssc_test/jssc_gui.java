@@ -25,7 +25,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import jssc.*;
 import jssc.SerialPort;
 
-
+//
 
 
 public class jssc_gui extends javax.swing.JFrame
