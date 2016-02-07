@@ -298,7 +298,7 @@ public class jssc_gui extends javax.swing.JFrame
                                  while(serialPort.isOpened() && nextByte == null)
                                     {
                                         nextByte = serialPort.readBytes();
-                                         System.out.println(nextByte+"\n");
+                                       //  System.out.println(nextByte+"\n");
                                      } 
                         }
   
